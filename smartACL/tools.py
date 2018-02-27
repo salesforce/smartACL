@@ -6,9 +6,16 @@
 import itertools
 
 import sys
-sys.path.insert(0, 'smartACL/third_party')
-sys.path.insert(0, 'third_party')
-import third_party.netaddr as netaddr
+try:
+    import netaddr
+except:
+    try:
+        import sys
+        sys.path.insert(0, 'smartACL/third_party')
+        sys.path.insert(0, 'third_party')
+        import third_party.netaddr as netaddr
+    except:
+        raise ImportError("The netaddr module is not installed, exiting...")
 
 import linkdef
 

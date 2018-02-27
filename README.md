@@ -33,7 +33,7 @@ If you would like to use smartACL, or any of its components as module, check thi
    
 This is not going to be matched for the time being by SmartLog or SmartCompare
 
-## PYPI (Optional Step)
+## PYPY (Optional Step)
 
 PyPy is Python interpreter and JIT compiler. PyPy is focused on speed and 100% compatibility with the CPython.
 

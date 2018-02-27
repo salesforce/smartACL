@@ -17,9 +17,12 @@ import link_pol
 import tools  # This import needs to be before linkdef
 
 try:
-    import third_party.ipaddress as ipaddress
+    import ipaddr
 except:
-    raise ImportError("The ip address module is not installed, exiting...")
+    try:
+        import third_party.ipaddr as ipaddr
+    except:
+        raise ImportError("The ipaddr module is not installed, exiting...")
 
 from linkdef import *
 
@@ -54,8 +57,8 @@ def smartCheck(policy_del, policy_add,
         if ip1 == ip2:
             return True
         try:
-            ipa1 = ipaddress.IPv4Network(unicode(ip1))
-            ipa2 = ipaddress.IPv4Network(unicode(ip2))
+            ipa1 = ipaddr.IPv4Network(ip1)
+            ipa2 = ipaddr.IPv4Network(ip2)
         except:
             return False
         return ipa1 == ipa2
@@ -268,33 +271,33 @@ def smartCheck(policy_del, policy_add,
 
                     tools.DEBUG(DEBUG, 'smartCheck', 'working with IPs', sIP, dIP, rule_matched[1], rule_matched[2])
 
-                    n1s = ipaddress.IPv4Network(unicode(sIP))
-                    n1d = ipaddress.IPv4Network(unicode(dIP))
+                    n1s = ipaddr.IPv4Network(sIP)
+                    n1d = ipaddr.IPv4Network(dIP)
 
                     if _is_any(rule_matched[7], rule_matched[1]):
-                        n2s = ipaddress.IPv4Network(u'0.0.0.0/0')
+                        n2s = ipaddr.IPv4Network('0.0.0.0/0')
                     else:
                         if '/0.0.0.0' in rule_matched[1]: # This will happen only with wildcard = True
                             # The wildcard 0.0.0.0 (host wildcard) is not working with ipaddress library
-                            n2s = ipaddress.IPv4Network(unicode(rule_matched[1].split('/')[0] + '/255.255.255.255'))
+                            n2s = ipaddr.IPv4Network(rule_matched[1].split('/')[0] + '/255.255.255.255')
                         else:
-                            n2s = ipaddress.IPv4Network(unicode(rule_matched[1]))
+                            n2s = ipaddr.IPv4Network(rule_matched[1])
 
                     if _is_any(rule_matched[7], rule_matched[2]):
-                        n2d = ipaddress.IPv4Network(u'0.0.0.0/0')
+                        n2d = ipaddr.IPv4Network('0.0.0.0/0')
                     else:
                         if '/0.0.0.0' in rule_matched[2]:
                             # The wildcard 0.0.0.0 (host wildcard) is not working with ipaddress library
-                            n2d = ipaddress.IPv4Network(unicode(rule_matched[2].split('/')[0] + '/255.255.255.255'))
+                            n2d = ipaddr.IPv4Network(rule_matched[2].split('/')[0] + '/255.255.255.255')
                         else:
-                            n2d = ipaddress.IPv4Network(unicode(rule_matched[2]))
+                            n2d = ipaddr.IPv4Network(rule_matched[2])
 
-                    if n1s.compare_networks(n2s) < 0 and n1s != ipaddress.IPv4Network(u'0.0.0.0/0'):
+                    if n1s.compare_networks(n2s) < 0 and n1s != ipaddr.IPv4Network('0.0.0.0/0'):
                         new_sources = list(n1s.address_exclude(n2s))
                     else:
                         new_sources = [n1s]
 
-                    if n1d.compare_networks(n2d) < 0 and n1d != ipaddress.IPv4Network(u'0.0.0.0/0'):
+                    if n1d.compare_networks(n2d) < 0 and n1d != ipaddr.IPv4Network('0.0.0.0/0'):
                         new_dest = list(n1d.address_exclude(n2d))
                     else:
                         new_dest = [n1d]

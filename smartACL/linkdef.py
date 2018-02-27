@@ -3,11 +3,16 @@
 # Licensed under the BSD 3-Clause license.
 # For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
 
-import os
-import sys
-sys.path.insert(0, 'smartACL/third_party')
-sys.path.insert(0, 'third_party')
-import third_party.netaddr as netaddr
+try:
+    import netaddr
+except:
+    try:
+        import sys
+        sys.path.insert(0, 'smartACL/third_party')
+        sys.path.insert(0, 'third_party')
+        import third_party.netaddr as netaddr
+    except:
+        raise ImportError("The netaddr module is not installed, exiting...")
 
 from tools import wild_is_contiguous
 from tools import split_non_contiguous

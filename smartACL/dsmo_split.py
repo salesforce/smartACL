@@ -6,11 +6,17 @@
 # Licensed under the BSD 3-Clause license.
 # For full license text, see LICENSE.txt file in the repo root  or https://opensource.org/licenses/BSD-3-Clause
 
-import sys
 import argparse
 import linkdef
 import tools
-import third_party.ipaddr as ipaddr
+
+try:
+    import ipaddr
+except:
+    try:
+        import third_party.ipaddr as ipaddr
+    except:
+        raise ImportError("The ipaddr module is not installed, exiting...")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('network', help='Network with DSMO mask in the format X.X.X.X/Y.Y.Y.Y')
