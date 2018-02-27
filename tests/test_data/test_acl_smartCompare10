@@ -1,0 +1,98 @@
+firewall {
+    family inet {
+        filter test {
+            term testt1 {
+                from {
+                    source-address {
+                        10.0.0.0/24;
+                    }
+                    destination-address {
+                        10.0.1.0/24;
+                    }
+                    protocol tcp;
+                    destination-port 23;
+                }
+                then {
+                    accept;
+                }
+            }
+            term testt2 {
+                from {
+                    source-address {
+                        10.0.0.192/26;
+                    }
+                    destination-address {
+                        10.0.1.0/25;
+                        10.0.1.128/26;
+                    }
+                    protocol tcp;
+                    destination-port 22;
+                }
+                then {
+                    accept;
+                }
+            }
+            term testt3 {
+                from {
+                    source-address {
+                        10.0.0.0/8;
+                    }
+                    destination-address {
+                        10.0.0.0/8;
+                    }
+                    protocol tcp;
+                    destination-port 22;
+                }
+                then {
+                    discard;
+                }
+            }
+            term testt4 {
+                from {
+                    source-address {
+                        10.0.0.0/24;
+                    }
+                    destination-address {
+                        10.0.2.0/24;
+                    }
+                    protocol tcp;
+                    destination-port 23;
+                }
+                then {
+                    accept;
+                }
+            }
+            term testt5 {
+                from {
+                    source-address {
+                        10.0.1.0/24;
+                    }
+                    destination-address {
+                        10.0.1.0/26;
+                    }
+                    protocol tcp;
+                    destination-port 22;
+                }
+                then {
+                    accept;
+                }
+            }
+            term testt6 {
+                from {
+                    source-address {
+                        10.0.1.0/25;
+                        10.0.1.128/25;
+                    }
+                    destination-address {
+                        10.0.1.0/26;
+                    }
+                    protocol tcp;
+                    destination-port 22;
+                }
+                then {
+                    accept;
+                }
+            }
+        }
+    }
+}

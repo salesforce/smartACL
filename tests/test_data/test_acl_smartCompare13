@@ -1,0 +1,4 @@
+permit udp 0.0.0.0 0.0.0.0 eq 67 255.255.255.255 0.0.0.0 eq 68
+permit udp any eq 68 255.255.255.255 0.0.0.0 eq 67
+permit udp 192.168.1.0 0.0.0.63 eq 68 any eq 68
+permit udp 192.168.1.192 0.0.0.63 eq 68 any eq 68

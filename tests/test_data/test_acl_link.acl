@@ -1,0 +1,19 @@
+remark Let match 100%
+permit icmp 10.0.0.0/8 10.0.0.0/8
+permit udp 10.0.0.0/8 10.0.0.0/8 eq 53
+permit ip 10.0.0.0/8 any eq http
+permit udp any host 8.8.8.8 eq 53
+permit tcp host 1.2.3.5 host 10.0.0.1 eq 80
+permit tcp 10.231.69.128/26 10.0.0.0/28 eq 7080
+permit tcp 10.231.69.128/26 10.0.0.64 255.255.255.240 eq 7080
+permit tcp 10.231.69.128/25 10.0.0.128/26 eq https
+permit tcp 10.231.69.128/25 10.0.0.192/26 eq 7080
+permit tcp 10.231.69.150/32 host 10.0.0.1 range 100 200
+permit tcp host 10.231.69.150 10.0.0.0/8 range ftp-data ftp
+permit tcp host 10.231.69.150 range ftp-data ftp 10.0.0.0/8
+permit tcp host 1.2.3.4 eq https any
+permit tcp host 1.2.3.5 gt 7000 any
+permit host 10.0.0.1
+permit 10.0.0.1
+permit 10.0.0.1 11.0.0.1
+deny any log
