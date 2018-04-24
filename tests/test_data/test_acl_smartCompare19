@@ -1,0 +1,21 @@
+firewall {
+    family inet {
+        filter test {
+            term testt1 {
+                from {
+                    source-address {
+                        10.0.0.0/24;
+                    }
+                    destination-address {
+                        10.0.1.0/24;
+                    }
+                    protocol tcp;
+                    destination-port 22,23;
+                }
+                then {
+                    accept;
+                }
+            }
+        }
+    }
+}

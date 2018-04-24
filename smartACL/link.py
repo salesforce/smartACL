@@ -12,6 +12,7 @@ from linkdef import *
 import link_cisco
 import link_juniper
 import link_pol
+import link_fortigate
 import tools
 import glob
 
@@ -31,7 +32,7 @@ def link(sourceIP, destIP, files, opts):
         return 'ERROR: No files specified.'
 
     # Initial values for opts
-    list_k =     ['sport', 'dport','proto', 'acltype', 'showallmatches', 'showdenyall', 'hideallowall', 'matchanyport', 'summarized', 'capircadef', 'nooutput', 'debug']
+    list_k =     ['sport', 'dport','proto', 'acltype', 'showallmatches', 'showdenyall', 'hideallowall', 'matchanyport', 'summarized', 'capircadef', 'nooutput', 'ignore-line', 'debug']
     list_v_def = ['0',      # sport
                   '0',      # dport
                   'ip',     # proto
@@ -43,11 +44,15 @@ def link(sourceIP, destIP, files, opts):
                   False,    # summarized
                   '',       # capircadef
                   False,    # nooutput
+                  '',       # ignore-line
                   False]    # debug
     for i,v in enumerate(list_k):
         if v not in opts:
             opts[v] = list_v_def[i]
 
+    ignore_lines = opts['ignore-line']
+    if ignore_lines != '':
+        ignore_lines = ignore_lines.split(',')
     sport = opts['sport']
     dport = opts['dport']
     if '-' in dport:
@@ -80,6 +85,8 @@ def link(sourceIP, destIP, files, opts):
                         print 'Can\'t parse POL file without a valid Capirca Definitions Directory. Ignoring file:', filename
                         continue
                     parsed = link_pol.pol_parser(filename, opts['capircadef'], policy, opts['debug'])
+                elif type_ext == 'ftg':
+                    parsed = link_fortigate.for_parser(filename, policy, DEBUG=opts['debug'])
                 else:
                     print 'Can\'t detect ACL type. Ignoring file:', filename
                     continue # if the file extension is not known next one
@@ -89,6 +96,17 @@ def link(sourceIP, destIP, files, opts):
                     if not opts['summarized']:
                         sys.stdout.write('Processing file: {0:<64}'.format(filename))
                     if opts['debug']: policy.print_policy()
+
+                    # Ignoring lines
+                    if len(ignore_lines) > 0:
+                        num_rule = policy.get_rules_number()
+                        while num_rule > 0:
+                            rule = policy.get_rule(num_rule)
+                            if not rule[0].startswith('^'):  # Disabled rules
+                                if rule[0] in ignore_lines:
+                                    policy.remove_rule(num_rule)
+                            num_rule -= 1
+
                     rules_found = policy.link(sIP, dIP, dport, sport, opts['proto'], rules_exclude=[], show_deny=opts['showdenyall'], hide_allow_all=opts['hideallowall'], showallmatches=opts['showallmatches'], anyport=opts['matchanyport'])
                     if len(rules_found) > 0:
                         rules_names = []
@@ -139,9 +157,10 @@ if __name__ == '__main__':  # pragma: no cover
     parser.add_argument('--showdenyall', help='Show matches with ANY ANY DENY', action='store_true')
     parser.add_argument('--hideallowall', help='Hide matches with ANY ANY PERMIT', action='store_true')
     parser.add_argument('--showallmatches', help='Show all matches instead of stopping with the first found', action='store_true')
-    parser.add_argument('--acltype', help='Specifiy the ACL type: acl,ncl,jcl,pol')
+    parser.add_argument('--acltype', help='Specifiy the ACL type: acl,ncl,jcl,pol,ftg')
     parser.add_argument('--summarized', help='Show only a summary for the flow/s requested', action='store_true')
     parser.add_argument('--capircadef', help='Capirca definitions directory', default='')
+    parser.add_argument('--ignore-line', dest='ignore_term', help='Ignore the following lines (ACL remark for Cisco or Term name for Juniper)', default='')
     parser.add_argument('--nooutput', help='Hide any output (useful as module)', action='store_true')
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--foo', help=argparse.SUPPRESS, action='store_true')  # no output at all, just for testing code
@@ -181,12 +200,14 @@ if __name__ == '__main__':  # pragma: no cover
     opts['showallmatches'] = args.showallmatches
     opts['summarized'] = args.summarized
     opts['capircadef'] = args.capircadef
+    opts['ignore-line'] = args.ignore_term
     opts['nooutput'] = args.nooutput
     opts['debug'] = args.debug
 
     r = link(sIP, dIP, files, opts)
     if type(r) is not dict:
         print r
+    print r
     sys.exit()
 
 

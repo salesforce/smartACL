@@ -1,4 +1,10 @@
 ## Changelog
+#### v3.1.1
+- Link: rules with multiple ports are now split to improve smartCompare
+
+#### v3.1
+- Link: support Fortigate!
+
 #### v3.0
 - smartCompare now support Capirca policies
 - smartCompare: now you can ignore specific rules in the comparison (like denies)

@@ -26,7 +26,7 @@ class smartTest(unittest.TestCase):
         self.file9 = 'tests/test_data/test_acl_smartShadow9'
         self.file10 = 'tests/test_data/test_acl_smartShadow10'
         self.file11 = 'tests/test_data/test_acl_smartShadow11'
-
+        self.file12 = 'tests/test_data/test_acl_smartShadow12'
 
         self.results_f1 = [{'permit tcp 10.230.0.0 0.0.0.127 10.240.0.0 0.0.0.127': 'permit tcp 10.230.0.0 0.0.0.127 10.240.0.0 0.0.0.127', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.63 eq 7080': 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.255 eq 7080', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.128 0.0.0.127 eq 7080': 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.255 eq 7080', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.64 0.0.0.63 eq 7080': 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.255 eq 7080'}, {}]
         self.results_f2 = [{'permit tcp 10.230.0.0 0.0.0.127 10.240.0.0 0.0.0.127': 'permit tcp 10.230.0.0 0.0.0.127 10.240.0.0 0.0.0.127', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.255 eq 7080': 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.63 eq 7080\npermit tcp 10.231.69.128 0.0.0.127 10.0.0.64 0.0.0.63 eq 7080\npermit tcp 10.231.69.128 0.0.0.127 10.0.0.128 0.0.0.127 eq 7080'}, {}]
@@ -39,6 +39,7 @@ class smartTest(unittest.TestCase):
         self.results_f9 = [{'term testt5': 'term testt6', 'term testt2': 'term testt1'}, {'term testt6': 'term testt3'}]
         self.results_f10 = [{'term testt2a': "term testt1{1{1{['10.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.0']", "term testt2b{8{1{['11.0.0.192/255.255.255.192', '10.0.1.0/255.255.255.0']": "term testt1{1{3{['11.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.0']", "term testt6{17{1{['10.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.192']": "term testt1{1{1{['10.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.0']"}, {'term testt5': "term testt3{10{1{['10.0.0.0/255.0.0.0', '10.0.0.0/255.0.0.0']\nterm testt3{10{2{['10.0.0.0/255.0.0.0', '11.0.0.0/255.0.0.0']", "term testt6{17{1{['10.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.192']": "term testt3{10{1{['10.0.0.0/255.0.0.0', '10.0.0.0/255.0.0.0']"}]
         self.results_f11 = [{'permit tcp 10.0.0.0 0.0.0.255 10.0.1.0 0.0.0.127 eq 80': 'permit tcp 10.0.0.0 0.0.0.255 10.0.1.0 0.0.0.255 eq 80'}, {'permit tcp 12.0.0.0 0.0.0.255 10.0.1.0 0.0.0.255 eq 80': 'deny tcp any any eq 80', 'permit tcp host 10.0.0.10 host 10.10.10.10 eq 80': 'deny tcp any any eq 80'}]
+        self.results_f12 = [{'permit udp 0.0.0.0 0.0.0.0 eq 67 255.255.255.255 0.0.0.0 eq 68': 'permit udp any eq 67 255.255.255.255 0.0.0.0 eq 68'}, {}]
 
         null = open(os.devnull, 'w')
         self.stdout = sys.stdout
@@ -101,8 +102,14 @@ class smartTest(unittest.TestCase):
         link_cisco.acl_parser(self.file11, policy)
         self.assertEqual(smartACL.smartShadow2(policy), self.results_f11)
 
+    def test_smartShadow12(self):
+        policy = linkdef.FWPolicy('', self.file12)
+        link_cisco.acl_parser(self.file12, policy)
+        self.assertEqual(smartACL.smartShadow2(policy), self.results_f12)
+
     def tearDown(self):
         sys.stdout = self.stdout
 
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()

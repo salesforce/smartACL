@@ -92,7 +92,7 @@ firewall {
                         10.0.1.0/24;
                     }
                     protocol tcp;
-                    destination-port [21 20 22];
+                    destination-port [ 21 20 22 ];
                 }
                 then {
                     accept;
