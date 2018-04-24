@@ -233,9 +233,7 @@ def acl_parser(filename, policy, remarkasname=False, DEBUG=False):
                                 sPortACL,
                                 protocolACL,
                                 lPermit,
-                                acl_wild,
-                                '',
-                                '')
+                                acl_wild)
 
             if type(filename) is list or rule_name == '':
                 policy.set_rule_name(r, line)

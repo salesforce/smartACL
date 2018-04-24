@@ -33,7 +33,7 @@ def parse_data_store(policy, rulenumber, attribute, data):
 
     if 'port' in attribute:
         if '[' in data:
-            tdata = data[1:-1].strip() # Removing [
+            tdata = data.replace('[', '').replace(']', '').strip()
             tdata = tdata.split()
             data = ''
             for i in tdata:
@@ -192,3 +192,9 @@ if __name__ == "__main__":
     jcl_parser(sys.argv[1], policy)
     policy.print_policy()
 
+    print '-----------------'
+    print 'SPLITTING POLICY'
+    print '-----------------'
+
+    policy.split_ips()
+    policy.print_policy()
