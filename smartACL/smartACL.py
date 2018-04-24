@@ -154,7 +154,7 @@ def smartCheck(policy_del, policy_add,
                     list_rules_match_add.pop()
                 return []
             policy_del_temp = FWPolicy('del-temp', 'temp', DEBUG)
-            policy_del_temp.new_rule(ruled[1], ruled[2], ruled[3], ruled[4], ruled[5], ruled[6], ruled[7], '', '')
+            policy_del_temp.new_rule(ruled[1], ruled[2], ruled[3], ruled[4], ruled[5], ruled[6], ruled[7])
             policy_del_temp.split_non_contiguous_wild()
             tools.DEBUG(DEBUG, 'smartCheck', 'Non contiguous found. Splitting policy.', ruled)
             if policy_del_temp.check_if_any_non_contiguous():
@@ -313,7 +313,7 @@ def smartCheck(policy_del, policy_add,
                             for new_d in new_dest:
                                 irule_number = policy_del_temp.new_rule(str(new_s.with_hostmask) if wildcard else str(new_s.with_netmask),
                                                                         str(new_d.with_hostmask) if wildcard else str(new_d.with_netmask),
-                                                                        ruled[3], ruled[4], ruled[5], ruled[6], ruled[7], '', '')
+                                                                        ruled[3], ruled[4], ruled[5], ruled[6], ruled[7])
                                 # Check comment for non-contiguous rule to understand the naming of the rules
                                 policy_del_temp.set_rule_name(irule_number, 'split rule -' + str(irule_number))
                         # We are going to check a subpolicy, so from a rule partially matched, we create a subpolicy
@@ -961,6 +961,7 @@ def smartCompare2(p_policy1, p_policy2, verbose=False, only_different=False, out
             print 'Rules not fully matched from OLD policy:'
             for i in output_to_print:
                 print i
+
 
     return rules_to_remove
 

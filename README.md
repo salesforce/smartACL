@@ -7,7 +7,7 @@ These tools are divided into:
 
 - [Link](Operational%20Information/README.md#link-introduction):
     - Check flows in one or multiple ACLs.
-    - It supports Cisco, Juniper and Force10 ACLs format.
+    - It supports Cisco, Juniper, Force10 and Fortigate* ACLs format.
 
 - [smartCompare](Operational%20Information/README.md#smartcompare-introduction):
     - Analyzes two ACLs and show the difference between them.
@@ -30,6 +30,11 @@ If you would like to use smartACL, or any of its components as module, check thi
        + permit 10/8 10/8 range 100-150
        + permit 10/8 10/8 range 150-200
 ```
+
+2.- Fortigate limitations:
+- Only ICMP/TCP/UDP are fully supported service objects
+- For IP service objects, protocol is ignore and they are considered like "ip ACLs"
+- Working in "Negated" objects support 
    
 This is not going to be matched for the time being by SmartLog or SmartCompare
 
