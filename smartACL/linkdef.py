@@ -68,6 +68,8 @@ class FWRule (object):
         self.wildcard = False                       # If it's a rule with a valid wildcard (usually a Cisco ACL)
         self.source_name = ''                       # Name for source (useful in case of Pol files)
         self.dest_name = ''                         # Name for destination (useful in case of Pol files)
+        self.source_negated = False                 # Importing firewall rules it's possible to negate source (so everything "but")
+        self.dest_negated = False                   # Importing firewall rules it's possible to negate source (so everything "but")
         self.comment = ''                           # Comment for the rule
 
     #################################
@@ -89,7 +91,9 @@ class FWRule (object):
         rule.append(self.wildcard)              # 7
         rule.append(self.source_name)           # 8
         rule.append(self.dest_name)             # 9
-        rule.append(self.comment)               # 10
+        rule.append(self.source_negated)        # 10
+        rule.append(self.dest_negated)          # 11
+        rule.append(self.comment)               # 12
         return rule
 
     def get_rule_name(self):
@@ -134,7 +138,7 @@ class FWRule (object):
     # SET Methods                   #
     #################################
 
-    def set_rule_data(self, sAddress='', dAddress='', dPort='', sPort='', protocol='', ACCEPT=False, wildcard=False, name='-1', rulenumber=-1, source_name='', dest_name=''):
+    def set_rule_data(self, sAddress='', dAddress='', dPort='', sPort='', protocol='', ACCEPT=False, wildcard=False, name='-1', rulenumber=-1, source_name='', dest_name='', source_negated=False, dest_negated=False):
         if rulenumber >= 0:
             self.rulenumber = rulenumber
         if name != '-1':
@@ -148,6 +152,8 @@ class FWRule (object):
         self.wildcard = wildcard
         self.source_name = source_name
         self.dest_name = dest_name
+        self.source_negated = source_negated
+        self.dest_negated = dest_negated
 
 
     def set_name(self, name):
@@ -176,6 +182,12 @@ class FWRule (object):
 
     def set_destination(self, address):
         self.destination_address = address
+
+    def set_source_port(self, port):
+        self.source_port = port
+
+    def set_destination_port(self, port):
+        self.destination_port = port
 
     #################################
     # Internal Methods               #
@@ -390,7 +402,7 @@ class FWRule (object):
             print 'Source Address:', self.source_address
             if self.source_name != '':
                 print 'Source Name:', self.source_name
-            print 'Destination Address:', self.destination_address
+            print 'Destination Address' + (' (NEGATED)' if self.dest_negated else '') + ':', self.destination_address
             if self.dest_name != '':
                 print 'Destination Name:', self.dest_name
             print 'Destination Port:', self.destination_port
@@ -460,6 +472,7 @@ class FWRule (object):
                             match = self._checkIPMask(netT, filtT, ip_to_check)
                     if match:
                         break
+
             return match
 
 
@@ -516,20 +529,38 @@ class FWRule (object):
 
                 if not match and _any_in_source():
                     checked = True
-                    if dIP == '0.0.0.0' and is_0_any:
-                        match = True
+                    if dIP == '0.0.0.0':
+                        if is_0_any:
+                            match = True
+                        else:
+                            match = (self.wildcard and self.destination_address == '0.0.0.0/0.0.0.0') or \
+                                    (not self.wildcard and self.destination_address == '0.0.0.0/255.255.255.255')
                     else:
                         match = _check_ip(self.destination_address, dIP, self.wildcard)
+                        if self.dest_negated:
+                            match = not match
 
                 if not checked and _any_in_dest():
                     checked = True
-                    if sIP == '0.0.0.0' and is_0_any:
-                        match = True
+                    if sIP == '0.0.0.0':
+                        if is_0_any:
+                            match = True
+                        else:
+                            match = (self.wildcard and self.source_address == '0.0.0.0/0.0.0.0') or \
+                                    (not self.wildcard and self.source_address == '0.0.0.0/255.255.255.255')
                     else:
                         match = _check_ip(self.source_address, sIP, self.wildcard)
+                        if self.source_negated:
+                            match = not match
 
                 if not checked:
-                    match = _check_ip(self.source_address, sIP, self.wildcard) and  _check_ip(self.destination_address, dIP, self.wildcard)
+                    match = _check_ip(self.source_address, sIP, self.wildcard)
+                    if self.source_negated:
+                        match = not match
+                    if match:
+                        match = _check_ip(self.destination_address, dIP, self.wildcard)
+                        if self.dest_negated:
+                            match = not match
 
         if match:
             if self.protocol == 'icmp' or self.protocol == 'ip':
@@ -681,7 +712,7 @@ class FWPolicy (object):
     # Various Methods               #
     #################################
 
-    def new_rule(self, source_address, dest_address, dPort, sPort, protocol, ACCEPT, wildcard, source_name, dest_name):
+    def new_rule(self, source_address, dest_address, dPort, sPort, protocol, ACCEPT, wildcard, source_name='', dest_name='', source_negated=False, dest_negated=False):
         """
         Creates a new rule
         :param source_address:
@@ -693,12 +724,24 @@ class FWPolicy (object):
         :param wildcard:
         :param source_name:
         :param dest_name:
-        :return:
+        :param source_negated
+        :param dest_negated
+        :return: Rule number
         """
         fwrule = FWRule()
         if self.DEBUG:
             fwrule.set_debug()
-        fwrule.set_rule_data(sAddress=source_address, dAddress=dest_address, dPort=dPort, sPort=sPort, protocol=protocol, ACCEPT=ACCEPT, wildcard=wildcard, source_name=source_name, dest_name=dest_name)
+        fwrule.set_rule_data(sAddress=source_address,
+                             dAddress=dest_address,
+                             dPort=dPort,
+                             sPort=sPort,
+                             protocol=protocol,
+                             ACCEPT=ACCEPT,
+                             wildcard=wildcard,
+                             source_name=source_name,
+                             dest_name=dest_name,
+                             source_negated=source_negated,
+                             dest_negated=dest_negated)
         if self.rules[0] == '<empty>':
             self.rules = [fwrule]
         else:
@@ -710,7 +753,7 @@ class FWPolicy (object):
         """
         Creates a new EMPTY rule
         :param wildcard: TRUE/FALSE if the rule has/hasn't a Wildcard
-        :return:
+        :return: Rule number
         """
         fwrule = FWRule()
         if self.DEBUG:
@@ -877,8 +920,9 @@ class FWPolicy (object):
 
     def split_ips(self):
         """
-        Some ACLs (like Juniper) allow to have multiple IPs in Source and Destination. This function split all these rules
-        in rules with only one source and only one destination, adding some extra information in the name to identify them
+        Some ACLs (like Juniper) allow to have multiple IPs in Source and Destination and/or multple ports. This function
+        split all these rules in rules with only one source and only one destination, adding some extra information
+        in the name to identify them
 
         The name of the rules will be changed to:
             - <original rule name>{<original rule number>{<counter>{[<source_ip>,<destination_ip>]
@@ -899,8 +943,10 @@ class FWPolicy (object):
                 rule_data = rule.get_rule()
                 if rule_data[0].startswith('^'):  # Special rule, usually empty, we don't need to check it
                     continue
-                if ',' not in rule_data[1] and ',' not in rule_data[2]:
+
+                if ',' not in rule_data[1] and ',' not in rule_data[2] and ',' not in rule_data[3] and ',' not in rule_data[4]:
                     continue
+
                 if ',' in rule_data[1]:
                     ips_list = rule_data[1].split(',')
                 else:
@@ -910,40 +956,65 @@ class FWPolicy (object):
                     ipd_list = rule_data[2].split(',')
                 else:
                     ipd_list = [rule_data[2]]
+
+                if ',' in rule_data[3]:
+                    dport_list = rule_data[3].split(',')
+                else:
+                    dport_list = [rule_data[3]]
+
+                if ',' in rule_data[4]:
+                    sport_list = rule_data[4].split(',')
+                else:
+                    sport_list = [rule_data[4]]
+
                 rule_number = cont_rules
                 num_split = 0
+
                 for ips in ips_list:
                     for ipd in ipd_list:
-                        num_split += 1
-                        rule_name = rule_data[0] + '{' + str(cont_rules) + '{' + str(num_split) + '{' + str([ips,ipd])
+                        for s_port in sport_list:
+                            for d_port in dport_list:
 
-                        if rule_number == cont_rules:
-                            '''
-                            We need to split the current rule into multiple rules, so instead of remove the current one
-                            and add all the split, we change the current one with the data of the first "new rule"
-                            '''
-                            rule.set_source(ips)
-                            rule.set_destination(ipd)
-                            rule.set_name(rule_name)
-                        else:
-                            newrule = FWRule()
-                            newrule.set_rule_data(sAddress=ips,
-                                                  dAddress=ipd,
-                                                  dPort=rule_data[3],
-                                                  sPort=rule_data[4],
-                                                  protocol=rule_data[5],
-                                                  ACCEPT=rule_data[6],
-                                                  wildcard=False,
-                                                  name=rule_name,
-                                                  rulenumber=rule_number)
-                            if self.DEBUG:
-                                newrule.set_debug()
-                            self.rules.insert(rule_number - 1, newrule)
-                        rule_number += 1
+                                num_split += 1
+                                rule_name = rule_data[0] + '{' + str(cont_rules) + '{' + str(num_split) + '{' + str([ips,ipd])
+
+                                if rule_number == cont_rules:
+                                    '''
+                                    We need to split the current rule into multiple rules, so instead of remove the current one
+                                    and add all the split, we change the current one with the data of the first "new rule"
+                                    '''
+                                    rule.set_source(ips)
+                                    rule.set_destination(ipd)
+                                    rule.set_source_port(s_port)
+                                    rule.set_destination_port(d_port)
+                                    rule.set_name(rule_name)
+                                else:
+                                    newrule = FWRule()
+                                    newrule.set_rule_data(sAddress=ips,
+                                                          dAddress=ipd,
+                                                          dPort=d_port,
+                                                          sPort=s_port,
+                                                          protocol=rule_data[5],
+                                                          ACCEPT=rule_data[6],
+                                                          wildcard=False,
+                                                          name=rule_name,
+                                                          rulenumber=rule_number,
+                                                          source_name=rule_data[8],
+                                                          dest_name=rule_data[9],
+                                                          source_negated=rule_data[10],
+                                                          dest_negated=rule_data[11])
+                                    if self.DEBUG:
+                                        newrule.set_debug()
+                                    self.rules.insert(rule_number - 1, newrule)
+                                rule_number += 1
 
                 self.renum_policy()
 
         return True
+
+
+
+
 
     def get_number_split_rules(self, rule_info):
         """
@@ -1080,30 +1151,3 @@ class FWPolicy (object):
         """
         if len(self.rules) >= rulenumber:
             self.rules[rulenumber-1].print_rule(color=color)
-
-'''
-    def output_ncl_format(self):
-        output_list = []
-        if type(self.rules) != str:
-            for rule in self.rules:
-                rule.append(self.name)
-                rule.append(self.source_address)
-                rule.append(self.destination_address)
-                rule.append(self.destination_port)
-                rule.append(self.source_port)
-                rule.append(self.protocol)
-                rule.append(self.permit)
-                rule.append(self.wildcard)
-                
-                rule_data = rule.get_rule()
-                
-                if rule_data[6]:
-                    out = 'permit'
-                else:
-                    out = 'deny'
-                    
-                out += ' ' + rule_data[1].split('/')[0] + ' ' + rule_data[1].split('/')[1] + ' ' + \
-                       rule_data[2].split('/')[0] + ' ' + rule_data[2].split('/')[1]
-                output_list.append()
-        return output_list
-'''

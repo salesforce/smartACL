@@ -33,6 +33,8 @@ class smartTest(unittest.TestCase):
         self.filet15 = 'tests/test_data/test_acl_smartCompare15'
         self.filet16 = 'tests/test_data/test_acl_smartCompare16'
         self.filet17 = 'tests/test_data/test_acl_smartCompare17'
+        self.filet18 = 'tests/test_data/test_acl_smartCompare18'
+        self.filet19 = 'tests/test_data/test_acl_smartCompare19'
 
 
         self.results_t1_t2 = ['permit tcp 10.230.0.0 0.0.0.127 10.240.0.0 0.0.0.127', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.0 0.0.0.63 eq 7080', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.128 0.0.0.127 eq 7080', 'permit tcp 10.231.69.128 0.0.0.127 10.0.0.64 0.0.0.63 eq 7080']
@@ -60,6 +62,8 @@ class smartTest(unittest.TestCase):
         self.results_t15_t14 = []
         self.results_t16_t17 = []
         self.results_t17_t16 = []
+        self.results_t18_t19 = ['term testt1', 'term testt2']
+        self.results_t19_t18 = ["term testt1{1{1{['10.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.0']", "term testt1{1{2{['10.0.0.0/255.255.255.0', '10.0.1.0/255.255.255.0']"]
 
 
         null = open(os.devnull, 'w')
@@ -292,9 +296,30 @@ class smartTest(unittest.TestCase):
         smartacl_result = smartACL.smartCompare2(policy1, policy2, verbose=False,only_different=False,outprint=False,ignore_lines='',ignoredeny=False, ignoreshadowed=True, DEBUG=False)
         self.assertEqual(smartacl_result, self.results_t17_t16, 'Ignoring Shadowed Rules')
 
+    def test_smartCompare_t18_t19(self):
+        policy1 = linkdef.FWPolicy('', self.filet18, False)
+        link_juniper.jcl_parser(self.filet18, policy1, False)
+        policy2 = linkdef.FWPolicy('', self.filet19, False)
+        link_juniper.jcl_parser(self.filet19, policy2, False)
+        policy1.split_ips()
+        policy2.split_ips()
+        smartacl_result = smartACL.smartCompare2(policy1, policy2, verbose=False,only_different=False,outprint=False,ignore_lines='',ignoredeny=False, ignoreshadowed=False, DEBUG=False)
+        self.assertEqual(smartacl_result, self.results_t18_t19, 'Normal Test')
+
+    def test_smartCompare_t19_t18(self):
+        policy1 = linkdef.FWPolicy('', self.filet19, False)
+        link_juniper.jcl_parser(self.filet19, policy1, False)
+        policy2 = linkdef.FWPolicy('', self.filet18, False)
+        link_juniper.jcl_parser(self.filet18, policy2, False)
+        policy1.split_ips()
+        policy2.split_ips()
+        smartacl_result = smartACL.smartCompare2(policy1, policy2, verbose=False,only_different=False,outprint=False,ignore_lines='',ignoredeny=False, ignoreshadowed=False, DEBUG=False)
+        self.assertEqual(smartacl_result, self.results_t19_t18, 'Normal Test')
+
 
     def tearDown(self):
         sys.stdout = self.stdout
 
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()

@@ -53,4 +53,5 @@ class smartTest(unittest.TestCase):
         sys.stdout = self.stdout
 
 
-unittest.main()
+if __name__ == '__main__':
+    unittest.main()
