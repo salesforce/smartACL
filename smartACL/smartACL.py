@@ -416,7 +416,7 @@ def smartLog(log_file, check_fakes=True, print_add_matches=False, print_removed_
             line_s = line.split()
             if line.startswith('Index'):
                 # A new ACL begins, so we check if the previous one should be ignored
-                acl = line_s[1]
+                acl = line_s[1].split('/')[-1]
                 add_lines[acl] = []
                 del_lines[acl] = []
 
