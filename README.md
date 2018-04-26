@@ -1,4 +1,6 @@
-# **smartACL**
+[![Build Status](https://travis-ci.org/salesforce/smartACL.svg?branch=master)](https://travis-ci.org/salesforce/smartACL)
+
+# **smartACL** 
 
 ## Introduction
 A set of tools to work with ACLs. It's strongly recommended to use PyPy (http://doc.pypy.org/en/latest/install.html) as Python compiler for a huge increase in the performance.
